@@ -31,7 +31,19 @@ jobs:
         run: pnpm run build
 
       - name: Deploy to EdgeOne Pages
-        run: |
-          echo "部署准备就绪"
-          echo "构建产物位于 dist/ 目录"
-          echo "请通过 EdgeOne Pages 控制台上传 dist/ 目录"
+        uses: tencentcloudedge/edgeone-pages-action@v1
+        with:
+          # EdgeOne 项目 ID
+          project_id: ${{ secrets.EO_PAGES_PROJECT_ID }}
+          # 部署环境 (production 或 preview)
+          environment: production
+          # 构建产物目录
+          dist_dir: ./dist
+          # 部署备注
+          deploy_desc: "Automated deployment from GitHub Actions"
+        env:
+          # EdgeOne API 密钥
+          EO_SECRET_ID: ${{ secrets.EO_SECRET_ID }}
+          EO_SECRET_KEY: ${{ secrets.EO_SECRET_KEY }}
+          # 区域信息
+          EO_REGION: ap-guangzhou
