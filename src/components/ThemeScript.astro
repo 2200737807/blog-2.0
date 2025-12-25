@@ -1,0 +1,59 @@
+---
+import { themeConfig } from '~/.config'
+
+const theme = themeConfig.appearance.theme
+---
+
+<script is:inline define:vars={{ theme }}>
+  let currentTheme = theme
+
+  function updateTheme(theme) {
+    // Check if theme is system
+    if (theme === 'system') {
+      // Check OS preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      document.documentElement.classList.toggle('dark', prefersDark)
+      return prefersDark ? 'dark' : 'light'
+    }
+    // Set theme directly
+    const isDark = theme === 'dark'
+    document.documentElement.classList.toggle('dark', isDark)
+    return isDark ? 'dark' : 'light'
+  }
+
+  // Make toggleTheme globally available
+  window.toggleTheme = function () {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark'
+    updateTheme(currentTheme)
+    updateThemeIcon()
+    // Save theme to localStorage
+    localStorage.setItem('theme', currentTheme)
+  }
+
+  function updateThemeIcon() {
+    const icon = document.getElementById('theme-icon')
+    if (icon) {
+      // SVG图标已内嵌，无需更改
+    }
+  }
+
+  // Initial theme setup
+  // Check if user has saved theme preference
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme) {
+    currentTheme = updateTheme(savedTheme)
+  } else {
+  }
+
+  // Update icon based on current theme
+  updateThemeIcon()
+
+  // Listen for OS theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (theme === 'system' && !localStorage.getItem('theme')) {
+      currentTheme = e.matches ? 'dark' : 'light'
+      document.documentElement.classList.toggle('dark', e.matches)
+      updateThemeIcon()
+    }
+  })
+</script>

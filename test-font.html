@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>字体测试</title>
+    <style>
+      @font-face {
+        font-family: 'JustFontFenYuanZiTi-2';
+        src: url('/fonts/JustFontFenYuanZiTi-2.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      body {
+        font-family: 'JustFontFenYuanZiTi-2', sans-serif;
+        font-size: 24px;
+        margin: 20px;
+      }
+
+      .test-font {
+        font-family: 'JustFontFenYuanZiTi-2', sans-serif;
+      }
+
+      .fallback-font {
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>字体测试页面</h1>
+    <p class="test-font">这是使用 JustFontFenYuanZiTi-2 字体的文本。</p>
+    <p class="fallback-font">这是使用默认回退字体的文本。</p>
+    <p>检查浏览器控制台是否有字体加载错误。</p>
+  </body>
+</html>

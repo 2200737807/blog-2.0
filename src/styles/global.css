@@ -1,0 +1,84 @@
+:root {
+  --uno-colors-primary: theme('colors.primary');
+  --uno-colors-background: theme('colors.background');
+  --uno-fonts-ui: theme('fontFamily.ui');
+  --uno-colors-shadow: theme('colors.shadow');
+  --custom-cursor-size: 15px;
+  --custom-cursor-color-light: #2e405b;
+  --custom-cursor-color-dark: #ffffff;
+  --custom-cursor-opacity: 0.7;
+  --custom-cursor-hover-opacity: 0.9;
+  --custom-cursor-hover-scale: 1.5;
+}
+html {
+  --at-apply: antialiased;
+  --at-apply: 'bg-background c-primary font-ui text-shadow-color-shadow';
+  text-shadow: 1px 1px 1px var(--uno-colors-shadow);
+  background-size: 7px 7px;
+  background-image: linear-gradient(to right, var(--uno-colors-shadow) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--uno-colors-shadow) 1px, transparent 1px);
+  cursor: none;
+}
+
+/* 自定义圆形鼠标指针 */
+.custom-cursor {
+  position: fixed;
+  width: var(--custom-cursor-size);
+  height: var(--custom-cursor-size);
+  border-radius: 50%;
+  background-color: var(--custom-cursor-color-light);
+  opacity: var(--custom-cursor-opacity);
+  pointer-events: none;
+  z-index: 9999;
+  transition:
+    transform 0.1s ease,
+    opacity 0.2s ease,
+    background-color 0.3s ease;
+}
+
+/* 深色模式下的鼠标指针颜色 */
+html.dark .custom-cursor {
+  background-color: var(--custom-cursor-color-dark);
+}
+
+/* 鼠标悬停效果 */
+.custom-cursor.cursor-hover {
+  opacity: var(--custom-cursor-hover-opacity);
+  transform: scale(var(--custom-cursor-hover-scale));
+}
+
+:where(a):not(.not-underline-hover) {
+  --at-apply: 'p-1.5px';
+  --at-apply: 'decoration-underline decoration-0.1em decoration-offset-2px';
+  --at-apply: 'ease-in-out duration-300ms';
+  --at-apply: 'hover:(c-background bg-primary decoration-primary)';
+}
+
+/* 表格样式 */
+table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  width: auto !important;
+  max-width: 100% !important;
+  margin: 1rem auto !important;
+  table-layout: auto !important;
+}
+
+table,
+th,
+td {
+  border: 1px solid #ccc !important;
+  padding: 0.5rem 1rem !important;
+}
+
+th {
+  background-color: #555 !important;
+  color: white !important;
+  font-weight: bold !important;
+  text-align: left !important;
+}
+
+td {
+  white-space: normal !important;
+  text-align: left !important;
+}

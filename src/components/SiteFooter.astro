@@ -1,0 +1,65 @@
+---
+import { themeConfig } from '~/.config'
+
+const year = new Date().getFullYear()
+const { website, author, footer } = themeConfig.site
+
+function parseFooter(str: string) {
+  str = str.replace(/%author/g, author)
+  str = str.replace(/%website/g, website)
+  str = str.replace(/%year/g, year.toString())
+  return str
+}
+---
+
+<div class="footer-container">
+  {footer.length && footer.map((str) => <p set:html={parseFooter(str)} />)}
+
+  <!-- Site running time -->
+  <p class="running-time">
+    <span id="site-running-time">本站已运行</span>
+  </p>
+</div>
+
+<script>
+  // Set your site launch date here
+  const launchDate = new Date('2025-10-01')
+
+  function updateRunningTime() {
+    const now = new Date().getTime()
+    const launch = launchDate.getTime()
+    const diff = now - launch
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+    const element = document.getElementById('site-running-time')
+    if (element) {
+      element.textContent = `本站已运行 ${days} 天 ${hours} 小时 ${minutes} 分钟 ${seconds} 秒`
+    }
+  }
+
+  // Update immediately and then every second
+  updateRunningTime()
+  setInterval(updateRunningTime, 1000)
+</script>
+
+<style>
+  .footer-container {
+    --at-apply: 'flex flex-col items-center gap-3 py-5 text-center';
+  }
+
+  p {
+    --at-apply: 'font-bold text-3 m-0';
+  }
+
+  .running-time {
+    --at-apply: 'text-3 italic opacity-80';
+  }
+
+  a {
+    --at-apply: 'text-primary hover:underline transition-colors duration-200';
+  }
+</style>

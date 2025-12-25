@@ -1,0 +1,472 @@
+---
+import { themeConfig } from '~/.config'
+import SiteFooter from '~/components/SiteFooter.astro'
+import SiteNavigation from '~/components/SiteNavigation.astro'
+import SiteTitle from '~/components/SiteTitle.astro'
+import SiteSeo from '~/components/SiteSeo.astro'
+import LaTeX from '~/components/LaTeX.astro'
+import Analytics from '~/components/Analytics.astro'
+import ThemeScript from '~/components/ThemeScript.astro'
+import '~/styles/global.css'
+
+const lang = themeConfig.appearance.locale ?? 'en-us'
+const dark = themeConfig.appearance.theme === 'dark'
+
+// TypeScript类型声明
+declare global {
+  interface Window {
+    toggleSearch: (closeOnly?: boolean) => void
+    performSearch: () => Promise<void>
+  }
+}
+---
+
+<html lang={lang} class:list={['animation-prepared', { dark }]}>
+  <head>
+    <slot name="seo"> <SiteSeo /> </slot>
+    <LaTeX />
+    <Analytics />
+    <ThemeScript />
+    <!-- 自定义字体：JustFontFenYuanZiTi -->
+    <style>
+      @font-face {
+        font-family: 'JustFontFenYuanZiTi';
+        src: url('/fonts/JustFontFenYuanZiTi-2.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+
+    <!-- 阿里妈妈方圆体字体（如果需要保留） -->
+    <!-- <link
+      rel="stylesheet"
+      href="https://cdn.ziti163.com/ziti/css/alimama/AliMaFangYuanTiVF.css"
+    /> -->
+  </head>
+
+  <body
+    class="h-100vh max-w-1200px min-w-390px mx-a"
+    p="7.5 lg:(y-0 x-20)"
+    lg="grid gap-x-6 cols-[3fr_1fr] rows-[1fr_9rem]"
+  >
+    <header
+      class="transition-swup-header flex flex-col gap-2.5"
+      m="7.5 lg:(x-0 t-20 b-4)"
+      lg="row-1-2 col-2-3 justify-between items-start"
+    >
+      <SiteTitle />
+      <SiteNavigation />
+    </header>
+
+    <main class="transition-swup-main overflow-y-scroll scrollbar-hide outline-none" lg="row-1-3 col-1-2 py-20 ">
+      <slot />
+    </main>
+
+    <footer class="transition-swup-footer py-7.5" lg="row-2-3 col-2-3">
+      <SiteFooter />
+    </footer>
+
+    <!-- 自定义圆形鼠标指针元素 -->
+    <div class="custom-cursor"></div>
+
+    <script>
+      // 自定义圆形鼠标指针跟随 - 性能优化版
+      ;(() => {
+        const cursor = document.querySelector('.custom-cursor') as HTMLElement | null
+        if (!cursor) {
+          return
+        }
+
+        // 光标配置对象
+        const cursorConfig = {
+          getSize: () =>
+            Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--custom-cursor-size')),
+          getOffset: () => cursorConfig.getSize() / 2,
+          clickableElements: 'a, button, input, textarea, select',
+        }
+
+        // 鼠标位置缓存
+        let mouseX = 0
+        let mouseY = 0
+        let isHovering = false
+        let animationFrame: number | null = null
+
+        // 使用requestAnimationFrame优化鼠标移动
+        const updateCursorPosition = () => {
+          const offset = cursorConfig.getOffset()
+          cursor.style.left = `${mouseX - offset}px`
+          cursor.style.top = `${mouseY - offset}px`
+          animationFrame = requestAnimationFrame(updateCursorPosition)
+        }
+
+        // 鼠标移动事件处理
+        const handleMouseMove = (e: MouseEvent) => {
+          mouseX = e.clientX
+          mouseY = e.clientY
+
+          // 只在首次移动时启动动画循环
+          if (!animationFrame) {
+            updateCursorPosition()
+          }
+        }
+
+        // 悬停效果处理
+        const toggleHoverEffect = (element: Element, shouldAdd: boolean) => {
+          if (element.matches(cursorConfig.clickableElements)) {
+            cursor.classList.toggle('cursor-hover', shouldAdd)
+            isHovering = shouldAdd
+          }
+        }
+
+        // 添加事件监听器
+        document.addEventListener('mousemove', handleMouseMove)
+
+        // 使用捕获阶段进行事件委托，提高性能
+        document.addEventListener('mouseenter', (e) => {
+          const target = e.target as Element
+          if (target) {
+            toggleHoverEffect(target, true)
+          }
+        }, true)
+
+        document.addEventListener('mouseleave', (e) => {
+          const target = e.target as Element
+          if (target) {
+            toggleHoverEffect(target, false)
+          }
+        }, true)
+
+        // 窗口大小变化时重置动画循环（可选）
+        window.addEventListener('resize', () => {
+          if (animationFrame) {
+            cancelAnimationFrame(animationFrame)
+            animationFrame = null
+          }
+        })
+      })()
+
+      document.addEventListener('animationend', removeAnimation, false)
+      function removeAnimation() {
+        document.documentElement.classList.remove('animation-prepared')
+        document.removeEventListener('animationend', removeAnimation, false)
+      }
+
+      // 搜索功能优化版
+      const searchModule = {
+        // DOM元素缓存
+        elements: {
+          get modal() {
+            return document.getElementById('search-modal')
+          },
+          get input() {
+            return document.getElementById('search-input') as HTMLInputElement | null
+          },
+          get results() {
+            return document.getElementById('search-results')
+          },
+          get closeBtn() {
+            return document.getElementById('search-close')
+          },
+        },
+
+        // 状态管理
+        state: {
+          isOpen: false,
+          currentTerm: '',
+          isSearching: false,
+        },
+
+        // 显示搜索结果
+        renderResults: (posts: Array<{ title: string, url: string }>, _term: string) => {
+          const resultsEl = searchModule.elements.results
+          if (!resultsEl) {
+            return
+          }
+
+          if (posts.length === 0) {
+            resultsEl.innerHTML = '<div class="search-no-results">没有找到匹配的文章</div>'
+            return
+          }
+
+          // 使用模板字符串创建结果HTML，避免多次DOM操作
+          const resultsHTML = posts
+            .map(
+              (post) => `
+              <a href="${post.url}" class="search-result-item" onclick="searchModule.toggle(true)">
+                <h3 class="search-result-title">${post.title}</h3>
+              </a>
+            `,
+            )
+            .join('')
+
+          resultsEl.innerHTML = resultsHTML
+        },
+
+        // 执行搜索
+        performSearch: async () => {
+          const input = searchModule.elements.input
+          const resultsEl = searchModule.elements.results
+          if (!input || !resultsEl) {
+            return
+          }
+
+          const searchTerm = input.value.trim()
+          if (!searchTerm || searchModule.state.isSearching) {
+            return
+          }
+
+          // 更新状态
+          searchModule.state.currentTerm = searchTerm
+          searchModule.state.isSearching = true
+          resultsEl.innerHTML = '<div class="search-loading">搜索中...</div>'
+
+          try {
+            const response = await fetch('/search-data.json')
+            if (!response.ok) {
+              throw new Error('网络错误')
+            }
+            const posts = (await response.json()) as Array<{ title: string, url: string }>
+            const matchingPosts = posts.filter((post) => post.title.toLowerCase().includes(searchTerm.toLowerCase()))
+            searchModule.renderResults(matchingPosts, searchTerm)
+          }
+ catch (error) {
+            resultsEl.innerHTML = '<div class="search-error">搜索失败，请稍后重试</div>'
+            console.error('搜索错误:', error)
+          }
+ finally {
+            searchModule.state.isSearching = false
+          }
+        },
+
+        // 切换搜索模态框
+        toggle: (closeOnly?: boolean) => {
+          const modal = searchModule.elements.modal
+          const input = searchModule.elements.input
+          if (!modal) {
+            return
+          }
+
+          if (closeOnly) {
+            modal.classList.add('hidden')
+            searchModule.state.isOpen = false
+          }
+ else {
+            modal.classList.toggle('hidden')
+            searchModule.state.isOpen = !modal.classList.contains('hidden')
+
+            if (searchModule.state.isOpen && input) {
+              // 使用setTimeout确保模态框完全显示后再聚焦
+              setTimeout(() => input.focus(), 100)
+            }
+          }
+        },
+      }
+
+      // 暴露搜索功能到全局
+      window.toggleSearch = searchModule.toggle
+      window.performSearch = searchModule.performSearch
+
+      // 键盘快捷键优化版
+      document.addEventListener('keydown', (e) => {
+        // 快捷键定义
+        const shortcuts = {
+          search: { key: 'k', modifiers: ['Control', 'Meta'], action: () => searchModule.toggle() },
+          close: { key: 'Escape', modifiers: [], action: () => searchModule.toggle(true) },
+          executeSearch: {
+            key: 'Enter',
+            modifiers: [],
+            action: () => {
+              if (document.activeElement?.id === 'search-input') {
+                e.preventDefault()
+                window.performSearch()
+              }
+            },
+          },
+        }
+
+        // 检查快捷键组合
+        if (shortcuts.search.key === e.key && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault()
+          shortcuts.search.action()
+        }
+ else if (shortcuts.close.key === e.key) {
+          shortcuts.close.action()
+        }
+ else if (shortcuts.executeSearch.key === e.key) {
+          shortcuts.executeSearch.action()
+        }
+      })
+    </script>
+
+    <!-- 搜索模态框 -->
+    <div
+      id="search-modal"
+      class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex-col items-center justify-center"
+    >
+      <div class="search-container bg-background p-6 rounded-lg w-full max-w-2xl">
+        <div class="search-header flex items-center justify-between mb-4">
+          <h2 class="text-6 font-bold font-header">搜索</h2>
+          <button id="search-close" class="not-underline-hover text-4 cursor-pointer" onclick="window.toggleSearch()">
+            ✕
+          </button>
+        </div>
+
+        <div class="search-input-wrapper flex items-center border-b-2 border-primary">
+          <span class="i-mdi-magnify text-4 mr-2 text-primary"></span>
+          <input
+            id="search-input"
+            type="text"
+            placeholder="输入搜索关键词..."
+            class="flex-1 text-4 font-ui bg-transparent border-none outline-none p-2"
+          />
+        </div>
+
+        <div id="search-results" class="search-results mt-4 max-h-96 overflow-y-auto">
+          <div class="search-help">输入关键词并按Enter键搜索</div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      /* 页面首次加载动画 */
+      html.animation-prepared .transition-swup-header,
+      html.animation-prepared .transition-swup-footer {
+        animation: fade-in-down 1s linear 1;
+        --at-apply: 'lg-animate-name-fade-in-left';
+      }
+
+      html.animation-prepared .transition-swup-main {
+        animation: fade-in-down 1s linear 1;
+      }
+
+      @keyframes fade-in-down {
+        0% {
+          transform: translateY(-1rem);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes fade-in-left {
+        0% {
+          opacity: 0;
+          transform: translateX(1rem);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* 页面过渡动画 */
+      html.is-animating .transition-swup-main {
+        opacity: 0;
+        transform: translateY(-1rem);
+      }
+      html.is-leaving .transition-swup-main {
+        opacity: 0;
+        transform: translateY(1rem);
+      }
+      .transition-swup-main {
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      /* Header 和 Footer 过渡动画 */
+      html.is-animating .transition-swup-header {
+        opacity: 0;
+        transform: translateX(1rem);
+      }
+      html.is-leaving .transition-swup-header {
+        opacity: 0;
+        transform: translateX(-1rem);
+      }
+      .transition-swup-header {
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      html.is-animating .transition-swup-footer {
+        opacity: 0;
+        transform: translateX(1rem);
+      }
+      html.is-leaving .transition-swup-footer {
+        opacity: 0;
+        transform: translateX(-1rem);
+      }
+      .transition-swup-footer {
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      /* 链接悬停动画 */
+      :where(a):not(.not-underline-hover) {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* 搜索模态框动画 */
+      #search-modal {
+        transition: opacity 0.3s ease;
+      }
+      #search-modal:not(.hidden) {
+        animation: fade-in 0.3s ease;
+      }
+      #search-modal .search-container {
+        animation: slide-up 0.3s ease;
+      }
+
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slide-up {
+        from {
+          transform: translateY(1rem);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* 搜索样式 */
+      .search-loading {
+        --at-apply: 'text-center py-8 text-4';
+      }
+
+      .search-no-results {
+        --at-apply: 'text-center py-8 text-4';
+      }
+
+      .search-error {
+        --at-apply: 'text-center py-8 text-4 text-red';
+      }
+
+      .search-help {
+        --at-apply: 'text-center py-8 text-4 text-muted';
+      }
+
+      .search-result-item {
+        --at-apply: 'block p-4 mb-4 rounded hover:bg-primary/10 transition-colors duration-300';
+      }
+
+      .search-result-title {
+        --at-apply: 'text-5 font-bold font-header mb-1';
+      }
+    </style>
+  </body>
+</html>
