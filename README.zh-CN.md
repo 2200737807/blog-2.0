@@ -6,8 +6,9 @@
 <h6 align='center'>
 <a href="https://b.103000.vip//">在线预览</a>
 </h6>
-
 </p>
+
+---
 
 ## 特性
 
@@ -22,10 +23,13 @@
 - 支持 Disqus、Giscus、Twikoo 作为评论服务。
 - 支持暗色模式。
 
+---
 
 ## 开始使用
 
 这是一个轻巧、响应式设计且对 SEO 友好的 Astro 博客主题。本指南将帮助您开始一个新项目。
+
+---    
 
 ### 添加文章
 
@@ -46,9 +50,13 @@ description: 'description'
 pnpm theme:create
 ```
 
+---
+
 ## 定制化
 
 「活版印字」主题是高度可定制的。默认配置文件为 [src/.config/default.ts](src/.config/default.ts)，您可以根据需要在 [src/.config/user.ts](src/.config/user.ts) 中覆盖默认配置。
+
+---
 
 ### 社交链接
 
@@ -67,6 +75,8 @@ socials: [
 
 > 请注意，您需要重新启动开发服务器才能看到更改。
 
+---
+
 ### 导航链接
 
 默认情况下，导航是「文章」、「归档」、「分类」和「关于」。您可以在配置文件中添加更多内容：
@@ -82,6 +92,8 @@ navs: [
 
 然后在`src/page`中添加相应的页面，在 [Astro Pages](https://docs.astro.build/en/core-concepts/astro-pages/)中查看更多
 
+---
+
 ### 黑暗模式
 
 「活版印字」主题支持深色模式。您可以在配置文件中更改它：
@@ -89,6 +101,8 @@ navs: [
 ```ts
 themeStyle: 'dark' // 'light' | 'dark' | 'system'
 ```
+
+---
 
 ### 国际化 (i18n)
 
@@ -106,6 +120,8 @@ locale: 'zh-cn'
 - `ja-jp`
 
 您可以在[src/i18n.ts](src/i18n.ts)中查看所有支持的语言，并根据需要添加更多。
+
+---
 
 ### 评论
 
