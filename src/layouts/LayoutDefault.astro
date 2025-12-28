@@ -123,19 +123,59 @@ declare global {
         document.addEventListener('mousemove', handleMouseMove)
 
         // 使用捕获阶段进行事件委托，提高性能
-        document.addEventListener('mouseenter', (e) => {
-          const target = e.target as Element
-          if (target) {
-            toggleHoverEffect(target, true)
-          }
-        }, true)
+        document.addEventListener(
+          'mouseenter',
+          (e) => {
+            const target = e.target as Element
+            if (target) {
+              toggleHoverEffect(target, true)
+            }
+          },
+          true,
+        )
 
-        document.addEventListener('mouseleave', (e) => {
-          const target = e.target as Element
-          if (target) {
-            toggleHoverEffect(target, false)
-          }
-        }, true)
+        document.addEventListener(
+          'mouseleave',
+          (e) => {
+            const target = e.target as Element
+            if (target) {
+              toggleHoverEffect(target, false)
+            }
+          },
+          true,
+        )
+
+        // 鼠标离开窗口时隐藏自定义光标
+        window.addEventListener('mouseleave', () => {
+          cursor.style.opacity = '0'
+        })
+
+        // 鼠标进入窗口时显示自定义光标
+        window.addEventListener('mouseenter', () => {
+          cursor.style.opacity = 'var(--custom-cursor-opacity)'
+        })
+
+        // 检测移动设备，在触摸操作时隐藏自定义光标
+        let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
+        if (isTouchDevice) {
+          // 移动设备上默认隐藏自定义光标
+          cursor.style.display = 'none'
+        }
+ else {
+          // 桌面设备上监听触摸事件（防止触摸操作显示光标）
+          document.addEventListener('touchstart', () => {
+            cursor.style.display = 'none'
+          })
+
+          document.addEventListener('touchmove', () => {
+            cursor.style.display = 'none'
+          })
+
+          document.addEventListener('touchend', () => {
+            cursor.style.display = 'block'
+          })
+        }
 
         // 窗口大小变化时重置动画循环（可选）
         window.addEventListener('resize', () => {
@@ -178,7 +218,7 @@ declare global {
         },
 
         // 显示搜索结果
-        renderResults: (posts: Array<{ title: string, url: string }>, _term: string) => {
+        renderResults: (posts: Array<{ title: string; url: string }>, _term: string) => {
           const resultsEl = searchModule.elements.results
           if (!resultsEl) {
             return
@@ -226,15 +266,13 @@ declare global {
             if (!response.ok) {
               throw new Error('网络错误')
             }
-            const posts = (await response.json()) as Array<{ title: string, url: string }>
+            const posts = (await response.json()) as Array<{ title: string; url: string }>
             const matchingPosts = posts.filter((post) => post.title.toLowerCase().includes(searchTerm.toLowerCase()))
             searchModule.renderResults(matchingPosts, searchTerm)
-          }
- catch (error) {
+          } catch (error) {
             resultsEl.innerHTML = '<div class="search-error">搜索失败，请稍后重试</div>'
             console.error('搜索错误:', error)
-          }
- finally {
+          } finally {
             searchModule.state.isSearching = false
           }
         },
@@ -250,8 +288,7 @@ declare global {
           if (closeOnly) {
             modal.classList.add('hidden')
             searchModule.state.isOpen = false
-          }
- else {
+          } else {
             modal.classList.toggle('hidden')
             searchModule.state.isOpen = !modal.classList.contains('hidden')
 
@@ -289,15 +326,13 @@ declare global {
         if (shortcuts.search.key === e.key && (e.ctrlKey || e.metaKey)) {
           e.preventDefault()
           shortcuts.search.action()
-        }
- else if (shortcuts.close.key === e.key) {
+        } else if (shortcuts.close.key === e.key) {
           shortcuts.close.action()
-        }
- else if (shortcuts.executeSearch.key === e.key) {
+        } else if (shortcuts.executeSearch.key === e.key) {
           shortcuts.executeSearch.action()
         }
       })
-    </script>
+ </script>
 
     <!-- 搜索模态框 -->
     <div
