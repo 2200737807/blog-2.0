@@ -1,6 +1,6 @@
 ---
 title: "《北境灵闻录·卷一：白山狐灯》第三章"
-pubDate: 2026-02-002
+pubDate: 2026-01-003
 categories: ['小说']
 description: ''
 slug: bjlwlj1003
